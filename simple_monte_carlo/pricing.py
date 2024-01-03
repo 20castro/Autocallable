@@ -25,7 +25,12 @@ class MonteCarlo:
     def _barrier_breach_time(self, simulation: np.ndarray):
         breach = np.max(simulation, axis=0) >= self.barrier
         value_at_expiry = simulation[-1, np.logical_not(breach)]
-        first_breach = 1 + np.argmax(simulation[::, breach], axis=0)
+        breach_sim = simulation[::, breach]
+        m, nb = breach_sim.shape
+        first_breach = np.zeros(nb)
+        for k in range(m, 0, -1):
+            first_breach = np.where(breach_sim[k - 1, ::] >= self.barrier, k, first_breach)
+        assert np.all(first_breach >= 1)
         return first_breach, value_at_expiry
     
     def valuation(self, simulation: np.ndarray, verbose=True):
