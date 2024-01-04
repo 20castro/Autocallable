@@ -35,9 +35,9 @@ class HestonPath:
         V = self.V0*np.ones(shape=(m + 1, n))
         for k, (dwk1, dwk2) in enumerate(zip(dw1, dw2)):
             St = S[k, :]
-            Vt = V[k, :]
-            V[k + 1, :] = np.maximum(0, Vt + self.kappa*(self.theta - Vt)*dt + self.sigmav*np.sqrt(Vt)*dwk2)
-            S[k + 1, :] = St*(1 + self.rate*dt + np.sqrt(V[k + 1, :])*dwk1)
+            Vt =  np.maximum(0, V[k, :])
+            V[k + 1, :] = Vt + self.kappa*(self.theta - Vt)*dt + self.sigmav*np.sqrt(Vt)*dwk2
+            S[k + 1, :] = St*(1 + self.rate*dt + np.sqrt(Vt)*dwk1)
         return S
     
     def discrete_observations(self, m_observations, m_by_period, duration_period, n_simulations):
