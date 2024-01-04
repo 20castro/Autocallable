@@ -11,13 +11,11 @@ class MonteCarlo:
             barrier,
             freq,
             mat,
-            put_strike,
             notional
     ):
         self.coupon = q
         self.rate = rate
         self.barrier = barrier
-        self.strike = put_strike
         self.notional = notional
         self.frequency = freq
         self.maturity = mat
@@ -37,10 +35,9 @@ class MonteCarlo:
         first_breach, value_at_expiry = self._barrier_breach_time(simulation)
         n_breach = len(first_breach)
         n_expire = len(value_at_expiry)
-        n_put_exercised = np.count_nonzero(value_at_expiry <= self.strike)
         n = n_breach + n_expire
         if verbose:
-            print(f'{(100*n_breach/n):.2f}% hit the barrier and the put is exercised {(100*n_put_exercised/n):.2f}% of the time')
+            print(f'{(100*n_breach/n):.2f}% hit the barrier')
             first_breach_count = pd.value_counts(first_breach)/n
             print('Barrier breach at time:')
             for t, cnt in first_breach_count.sort_index().items():
@@ -48,8 +45,7 @@ class MonteCarlo:
         discount_autocall = np.exp(-self.rate*first_breach*self.frequency)
         payoff_in_case_of_breach = discount_autocall*self.notional*(1 + first_breach*self.coupon)
         discount_maturity = np.exp(-self.rate*self.maturity)
-        put_payoff = np.maximum(0, self.strike - value_at_expiry)
-        payoff_without_breach = discount_maturity*(self.notional - put_payoff)
+        payoff_without_breach = discount_maturity*self.notional*value_at_expiry/self.barrier
         payoff = np.concatenate([payoff_in_case_of_breach, payoff_without_breach])
         est = np.mean(payoff)
         ci95 = 1.96*np.std(payoff)/np.sqrt(n)
