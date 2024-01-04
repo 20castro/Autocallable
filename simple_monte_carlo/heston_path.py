@@ -39,3 +39,9 @@ class HestonPath:
             V[k + 1, :] = np.maximum(0, Vt + self.kappa*(self.theta - Vt)*dt + self.sigmav*np.sqrt(Vt)*dwk2)
             S[k + 1, :] = St*(1 + self.rate*dt + np.sqrt(V[k + 1, :])*dwk1)
         return S
+    
+    def discrete_observations(self, m_observations, m_by_period, duration_period, n_simulations):
+        dt = duration_period/m_by_period
+        m, n = m_observations*m_by_period, n_simulations
+        S = self.simulation(m, dt, n)
+        return S[m_by_period::m_by_period, ::]
